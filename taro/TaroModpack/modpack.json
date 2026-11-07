@@ -1,0 +1,7 @@
+{
+    "name": "TaroModpack",
+    "modrinth_project": "oePruTVg",
+    "game_version": "26.3",
+    "loader": "fabric",
+    "news_url": "https://raw.githubusercontent.com/xBladeClient/TaroLauncher/main/taro/news.json"
+}

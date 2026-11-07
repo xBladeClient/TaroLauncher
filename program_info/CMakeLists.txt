@@ -56,12 +56,24 @@ configure_file(${Launcher_AppID}.mime.xml ${Launcher_AppID}.xml COPYONLY)
 if(MSVC)
     set(Launcher_MSVC_Redist_NSIS_Section [=[
 !ifdef haveNScurl
-Section "Visual Studio Runtime"
+; Hidden section: the Microsoft Visual C++ runtime (NOT Visual Studio) is needed by tarolauncher.exe.
+; It is only downloaded when it is not installed yet.
+Section "-Microsoft Visual C++ Runtime"
     Var /GLOBAL vc_redist_exe
+    Var /GLOBAL vc_installed
     ${If} ${IsNativeARM64}
         StrCpy $vc_redist_exe "vc_redist.arm64.exe"
+        SetRegView 64
+        ReadRegDWORD $vc_installed HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\arm64" "Installed"
     ${Else}
         StrCpy $vc_redist_exe "vc_redist.x64.exe"
+        SetRegView 64
+        ReadRegDWORD $vc_installed HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" "Installed"
+    ${EndIf}
+    SetRegView default
+    ${If} $vc_installed == 1
+        DetailPrint "Microsoft Visual C++ Runtime already installed"
+        Return
     ${EndIf}
     DetailPrint 'Downloading Microsoft Visual C++ Redistributable...'
     NScurl::http GET "https://aka.ms/vs/17/release/$vc_redist_exe" "$INSTDIR\vc_redist\$vc_redist_exe" /INSIST /CANCEL /Zone.Identifier /END

@@ -1,40 +1,45 @@
-# TaroModpack: cómo poner tus mods y configs
+# TaroModpack y menú principal
 
-Esta carpeta es la **plantilla** del modpack que viene con TaroLauncher.
-El instalador la copia junto al `.exe` y, cada vez que se abre el launcher,
-la instancia **TaroModpack** se crea (si no existe) o se actualiza (si subiste la versión).
+## Cómo funciona TaroModpack
 
+TaroModpack **no guarda los mods en este repositorio**: se descarga de **Modrinth** la primera vez que se abre
+TaroLauncher (con todos sus mods y configs) y se instala como el perfil **TaroModpack** con el ícono de Taro.
+
+Cuando el modpack de Modrinth saca una versión nueva, el launcher pregunta al abrirse si querés actualizar.
+Los mundos y los ajustes del jugador se conservan.
+
+La configuración está en [`TaroModpack/modpack.json`](TaroModpack/modpack.json):
+
+```json
+{
+    "name": "TaroModpack",
+    "modrinth_project": "oePruTVg",
+    "game_version": "26.3",
+    "loader": "fabric",
+    "news_url": "https://raw.githubusercontent.com/xBladeClient/TaroLauncher/main/taro/news.json"
+}
 ```
-taro/TaroModpack/
-├── instance.cfg          ← nombre e ícono de la instancia
-├── mmc-pack.json         ← versión de Minecraft (26.3) y de Fabric Loader (0.19.5)
-├── taro_modpack.json     ← número de versión del modpack  ← SUBILO cuando cambies algo
-├── icon.png              ← ícono del modpack
-└── minecraft/
-    ├── mods/             ← acá van los .jar (los de KeoOptimized)
-    ├── config/           ← acá va la carpeta config de KeoOptimized
-    ├── resourcepacks/    ← opcional
-    └── shaderpacks/      ← opcional
+
+| Campo | Qué es |
+|---|---|
+| `name` | Nombre del perfil en el launcher. |
+| `modrinth_project` | ID (o slug) del modpack en Modrinth. `oePruTVg` = **Keo Optimized**. |
+| `game_version` | Versión de Minecraft a usar. Si KeoOptimized saca una versión para otra versión de Minecraft, cambiala acá. |
+| `loader` | `fabric`, `quilt`, `forge` o `neoforge`. |
+| `news_url` | De dónde se leen las noticias del menú principal. |
+
+`TaroModpack/icon.png` es el ícono del perfil.
+
+## Noticias del menú principal
+
+Las tarjetas de **Últimas noticias** se leen de [`news.json`](news.json) directamente desde GitHub,
+así que **podés cambiarlas editando ese archivo en la web de GitHub**, sin sacar un instalador nuevo:
+
+```json
+[
+    { "tag": "Lanzador", "title": "TaroLauncher ya está disponible", "date": "Noviembre 2026",
+      "url": "https://github.com/xBladeClient/TaroLauncher/releases/latest" }
+]
 ```
 
-## Pasos para meter KeoOptimized
-
-1. Abrí KeoOptimized en el launcher donde lo tengas y entrá a su carpeta `.minecraft` (o `minecraft`).
-2. Copiá **todo el contenido** de su carpeta `mods` a `taro/TaroModpack/minecraft/mods/`.
-3. Copiá **todo el contenido** de su carpeta `config` a `taro/TaroModpack/minecraft/config/`.
-4. Si trae `resourcepacks`, `shaderpacks`, `options.txt`, etc., copialos también dentro de `minecraft/`.
-5. Si KeoOptimized usa otra versión de Fabric Loader, cambiala en `mmc-pack.json`.
-6. Abrí `taro_modpack.json` y **subí el número** (`1` → `2` → `3`...). Así los jugadores que ya tienen
-   el launcher reciben la actualización.
-7. Compilá de nuevo (o hacé push a GitHub y esperá el instalador nuevo).
-
-## Qué pasa cuando actualizás el modpack
-
-Si el número de `taro_modpack.json` es mayor que el que tiene el jugador:
-
-- La carpeta `mods` se **reemplaza entera** (así no quedan mods viejos).
-- `config`, `resourcepacks`, `shaderpacks` y demás se **sobrescriben** archivo por archivo.
-- `mmc-pack.json` se actualiza (versión de Minecraft/Fabric).
-- Se **conservan**: mundos (`saves`), capturas, `options.txt`, `servers.dat` y la configuración de la instancia (RAM, Java, tiempo jugado).
-
-Si un jugador borra la instancia, se vuelve a crear la próxima vez que abra el launcher.
+`url` es opcional: si la ponés, la tarjeta se abre en el navegador al hacer click.

@@ -43,6 +43,19 @@
 #include "FileSystem.h"
 
 #include "MainWindow.h"
+
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QStackedWidget>
+#include <algorithm>
+
+#include "net/Mode.h"
+#include "ui/taro/TaroHomeWidget.h"
+#include "ui/taro/TaroModpackManager.h"
 #include "ui_MainWindow.h"
 
 #include <QDir>
@@ -433,6 +446,237 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     view->setFocus();
 
     retranslateUi();
+
+    setupTaroHome();
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// TaroLauncher home screen
+
+void MainWindow::setupTaroHome()
+{
+    // A sensible size for the home screen; restoreGeometry() replaces it if the window was used before.
+    resize(1200, 760);
+
+    m_taroHome = new TaroHomeWidget(this);
+    m_taroStack = new QStackedWidget(this);
+    QWidget* classic = takeCentralWidget();
+    m_taroStack->addWidget(m_taroHome);
+    m_taroStack->addWidget(classic);
+    setCentralWidget(m_taroStack);
+
+    m_taroHome->setAccountMenu(ui->accountsMenu);
+
+    connect(m_taroHome, &TaroHomeWidget::launchRequested, this, [](const QString& id) {
+        auto* inst = APPLICATION->instances()->getInstanceById(id);
+        if (inst && !inst->isRunning()) {
+            APPLICATION->launch(inst);
+        }
+    });
+    connect(m_taroHome, &TaroHomeWidget::killRequested, this, [](const QString& id) {
+        auto* inst = APPLICATION->instances()->getInstanceById(id);
+        if (inst && inst->isRunning()) {
+            APPLICATION->kill(inst);
+        }
+    });
+    connect(m_taroHome, &TaroHomeWidget::editRequested, this, [this](const QString& id) {
+        auto* inst = APPLICATION->instances()->getInstanceById(id);
+        if (!inst) {
+            return;
+        }
+        if (inst->canEdit()) {
+            APPLICATION->showInstanceWindow(inst);
+        } else {
+            CustomMessageBox::selectable(this, tr("Instance not editable"),
+                                         tr("This instance is not editable. It may be broken, invalid, or too old. Check logs for details."),
+                                         QMessageBox::Critical)
+                ->show();
+        }
+    });
+    connect(m_taroHome, &TaroHomeWidget::manageProfilesRequested, this, [this] { setTaroHomeVisible(false); });
+    connect(m_taroHome, &TaroHomeWidget::addModsRequested, this, [this] {
+        MinecraftInstance* inst = m_taroModpack ? m_taroModpack->installedInstance() : nullptr;
+        if (!inst) {
+            inst = m_selectedInstance;
+        }
+        if (inst && inst->canEdit()) {
+            APPLICATION->showInstanceWindow(inst, "mods");
+        } else {
+            setTaroHomeVisible(false);
+        }
+    });
+    connect(m_taroHome, &TaroHomeWidget::foldersRequested, this, [] { DesktopServices::openPath(QDir::currentPath(), true); });
+    connect(m_taroHome, &TaroHomeWidget::accountsRequested, this, &MainWindow::on_actionManageAccounts_triggered);
+    connect(m_taroHome, &TaroHomeWidget::settingsRequested, this, &MainWindow::on_actionSettings_triggered);
+    connect(m_taroHome, &TaroHomeWidget::helpRequested, this, &MainWindow::on_actionAbout_triggered);
+    connect(m_taroHome, &TaroHomeWidget::newsClicked, this, [](const QString& url) { DesktopServices::openUrl(QUrl(url)); });
+
+    // "Inicio" button in the classic view to come back
+    auto* homeAction = new QAction(QIcon(":/taro/logo.png"), tr("Inicio"), this);
+    homeAction->setToolTip(tr("Volver al menú principal"));
+    const auto toolbarActions = ui->mainToolBar->actions();
+    ui->mainToolBar->insertAction(toolbarActions.isEmpty() ? nullptr : toolbarActions.first(), homeAction);
+    connect(homeAction, &QAction::triggered, this, [this] { setTaroHomeVisible(true); });
+
+    // keep the home screen up to date
+    m_taroRefreshTimer.setSingleShot(true);
+    m_taroRefreshTimer.setInterval(150);
+    connect(&m_taroRefreshTimer, &QTimer::timeout, this, &MainWindow::refreshTaroHome);
+    auto* instances = APPLICATION->instances();
+    connect(instances, &QAbstractItemModel::dataChanged, this, &MainWindow::scheduleTaroHomeRefresh);
+    connect(instances, &QAbstractItemModel::rowsInserted, this, &MainWindow::scheduleTaroHomeRefresh);
+    connect(instances, &QAbstractItemModel::rowsRemoved, this, &MainWindow::scheduleTaroHomeRefresh);
+    connect(instances, &QAbstractItemModel::modelReset, this, &MainWindow::scheduleTaroHomeRefresh);
+    connect(APPLICATION->accounts(), &AccountList::listChanged, this, &MainWindow::scheduleTaroHomeRefresh);
+    connect(APPLICATION->accounts(), &AccountList::defaultAccountChanged, this, &MainWindow::scheduleTaroHomeRefresh);
+    connect(APPLICATION->icons(), &IconList::iconUpdated, this, &MainWindow::scheduleTaroHomeRefresh);
+
+    // TaroModpack: download from Modrinth on first start, offer updates later
+    m_taroModpack = new TaroModpackManager(this);
+    connect(m_taroModpack, &TaroModpackManager::runInstanceTask, this, [this](InstanceTask* task) {
+        m_taroHome->setStatusText(tr("Descargando %1...").arg(m_taroModpack->config().name));
+        instanceFromInstanceTask(task);
+        m_taroHome->setStatusText(QString());
+        if (auto* inst = m_taroModpack->installedInstance()) {
+            APPLICATION->settings()->set("SelectedInstance", inst->id());
+        }
+        scheduleTaroHomeRefresh();
+    });
+
+    // Applied after restoreState()/restoreGeometry(), which run right after the constructor
+    QTimer::singleShot(0, this, [this] {
+        setTaroHomeVisible(APPLICATION->settings()->get("TaroHomeView").toBool());
+        refreshTaroHome();
+        loadTaroNews();
+    });
+    QTimer::singleShot(1200, this, [this] { m_taroModpack->check(); });
+}
+
+void MainWindow::setTaroHomeVisible(bool home)
+{
+    if (!m_taroStack) {
+        return;
+    }
+    m_taroStack->setCurrentIndex(home ? 0 : 1);
+    APPLICATION->settings()->set("TaroHomeView", home);
+    if (home) {
+        ui->mainToolBar->hide();
+        ui->instanceToolBar->hide();
+        statusBar()->hide();
+        refreshTaroHome();
+    } else {
+        updateMainToolBar();
+        ui->instanceToolBar->show();
+        setStatusBarVisibility(APPLICATION->settings()->get("StatusBarVisible").toBool());
+    }
+}
+
+void MainWindow::scheduleTaroHomeRefresh()
+{
+    m_taroRefreshTimer.start();
+}
+
+void MainWindow::refreshTaroHome()
+{
+    if (!m_taroHome) {
+        return;
+    }
+
+    // player
+    MinecraftAccountPtr account = APPLICATION->accounts()->defaultAccount();
+    if (account) {
+        QString name = account->profileName();
+        if (name.isEmpty()) {
+            name = account->displayName();
+        }
+        m_taroHome->setPlayer(name, account->getFace());
+    } else {
+        m_taroHome->setPlayer(QString(), QPixmap());
+    }
+
+    // profiles: TaroModpack first, then the most recently played
+    auto* instances = APPLICATION->instances();
+    QList<MinecraftInstance*> list;
+    for (int i = 0; i < instances->count(); i++) {
+        list << instances->at(i);
+    }
+    MinecraftInstance* taro = m_taroModpack ? m_taroModpack->installedInstance() : nullptr;
+    std::stable_sort(list.begin(), list.end(), [taro](MinecraftInstance* a, MinecraftInstance* b) {
+        if ((a == taro) != (b == taro)) {
+            return a == taro;
+        }
+        return a->lastLaunch() > b->lastLaunch();
+    });
+
+    QList<TaroHomeProfile> profiles;
+    for (auto* inst : list) {
+        if (profiles.size() >= 8) {
+            break;
+        }
+        TaroHomeProfile profile;
+        profile.id = inst->id();
+        profile.name = inst->name();
+        profile.lastLaunch = inst->lastLaunch();
+        profile.running = inst->isRunning();
+        profile.canLaunch = inst->canLaunch();
+        profile.icon = APPLICATION->icons()->getIcon(inst->iconKey()).pixmap(64, 64);
+
+        auto* components = inst->getPackProfile();
+        QString mcVersion = components->getComponentVersion("net.minecraft");
+        if (mcVersion.isEmpty()) {
+            if (auto res = components->reload(Net::Mode::Offline); !res) {
+                qWarning() << "Failed to reload components:" << res.error();
+            }
+            mcVersion = components->getComponentVersion("net.minecraft");
+        }
+        profile.gameVersion = mcVersion;
+        if (!components->getComponentVersion("net.fabricmc.fabric-loader").isEmpty()) {
+            profile.loader = "Fabric";
+        } else if (!components->getComponentVersion("org.quiltmc.quilt-loader").isEmpty()) {
+            profile.loader = "Quilt";
+        } else if (!components->getComponentVersion("net.neoforged").isEmpty()) {
+            profile.loader = "NeoForge";
+        } else if (!components->getComponentVersion("net.minecraftforge").isEmpty()) {
+            profile.loader = "Forge";
+        } else {
+            profile.loader = "Vanilla";
+        }
+        connect(inst, &BaseInstance::runningStatusChanged, this, &MainWindow::scheduleTaroHomeRefresh, Qt::UniqueConnection);
+        profiles << profile;
+    }
+    m_taroHome->setProfiles(profiles);
+}
+
+void MainWindow::loadTaroNews()
+{
+    if (m_taroNewsLoaded || !m_taroModpack || m_taroModpack->config().newsUrl.isEmpty()) {
+        return;
+    }
+    m_taroNewsLoaded = true;
+    QNetworkRequest request{ QUrl(m_taroModpack->config().newsUrl) };
+    request.setHeader(QNetworkRequest::UserAgentHeader, BuildConfig.USER_AGENT);
+    request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
+    auto* reply = APPLICATION->network()->get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply] {
+        reply->deleteLater();
+        if (reply->error() != QNetworkReply::NoError) {
+            qWarning() << "TaroLauncher: could not load news:" << reply->errorString();
+            return;
+        }
+        QList<TaroHomeNews> news;
+        for (const auto& value : QJsonDocument::fromJson(reply->readAll()).array()) {
+            const auto obj = value.toObject();
+            TaroHomeNews item;
+            item.tag = obj.value("tag").toString();
+            item.title = obj.value("title").toString();
+            item.date = obj.value("date").toString();
+            item.url = obj.value("url").toString();
+            if (!item.title.isEmpty()) {
+                news << item;
+            }
+        }
+        m_taroHome->setNews(news);
+    });
 }
 
 // macOS always has a native menu bar, so these fixes are not applicable

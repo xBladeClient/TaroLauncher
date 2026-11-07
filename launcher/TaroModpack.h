@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-only
 /*
- *  TaroLauncher - default modpack installer
+ *  TaroLauncher - default modpack
  *
- *  The launcher ships a template instance called "TaroModpack" next to the
- *  executable. On every start this code makes sure that the user has it in
- *  their instances folder:
+ *  The installer ships a small folder called "TaroModpack" next to the executable:
  *
- *   - If the instance does not exist yet, the whole template is copied.
- *   - If it exists but the template has a higher "version" (taro_modpack.json),
- *     the modpack is updated: the mods folder is replaced, config files and the
- *     other bundled folders are overwritten, mmc-pack.json is refreshed.
- *     Worlds, screenshots, options.txt and servers.dat are kept.
+ *    TaroModpack/icon.png       icon of the instance
+ *    TaroModpack/modpack.json   which Modrinth modpack to install, e.g.
+ *                               { "name": "TaroModpack", "modrinth_project": "oePruTVg",
+ *                                 "game_version": "26.3", "loader": "fabric",
+ *                                 "news_url": "https://raw.githubusercontent.com/<user>/<repo>/main/taro/news.json" }
+ *
+ *  At startup (before icons/instances are loaded) prepareStartup() installs the icon and removes the
+ *  empty placeholder instance created by TaroLauncher 1.0.6. The actual download/update of the modpack
+ *  from Modrinth is done by ui/taro/TaroModpackManager once the main window is shown.
  */
 
 #pragma once
@@ -20,14 +22,24 @@
 
 namespace TaroModpack {
 
-constexpr auto INSTANCE_ID = "TaroModpack";
 constexpr auto ICON_KEY = "taromodpack";
-constexpr auto VERSION_FILE = "taro_modpack.json";
 
-// Returns the folder that contains the bundled template, or an empty string if it was not installed.
+struct Config {
+    QString name = "TaroModpack";
+    QString modrinthProject;  // Modrinth project id or slug
+    QString gameVersion;      // optional filter, e.g. "26.3"
+    QString loader;           // optional filter, e.g. "fabric"
+    QString newsUrl;          // optional JSON list of news shown on the home screen
+    bool isValid() const { return !modrinthProject.isEmpty(); }
+};
+
+// Returns the bundled "TaroModpack" folder, or an empty string if it is not installed.
 QString findTemplate(const QStringList& searchRoots);
 
-// Copies/updates the modpack. Returns true if something was installed or updated.
-bool ensureInstalled(const QString& templateDir, const QString& instancesDir, const QString& iconsDir);
+// Reads TaroModpack/modpack.json. Returns an invalid config if the file is missing or broken.
+Config readConfig(const QString& templateDir);
+
+// Copies the icon into the icons folder and removes the old empty placeholder instance (if untouched).
+void prepareStartup(const QString& templateDir, const QString& instancesDir, const QString& iconsDir);
 
 }  // namespace TaroModpack

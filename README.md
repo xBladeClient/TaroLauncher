@@ -5,14 +5,15 @@ con **TaroModpack** (Minecraft 26.3 + Fabric) preinstalado.
 
 - Al instalarlo con `TaroLauncherInstaller.exe` se crea un acceso directo en el escritorio y en el menú Inicio.
 - Todos los datos (instancias, cuentas, configuración) se guardan en `%APPDATA%\TaroLauncher`.
-- La primera vez que se abre, aparece la instancia **TaroModpack** lista para jugar. Si actualizás el
-  modpack, los jugadores reciben los cambios solos al abrir el launcher (ver [`taro/README.md`](taro/README.md)).
+- Menú principal propio: perfil del jugador, últimos perfiles jugados con botón **JUGAR**, y noticias editables.
+- La primera vez que se abre, descarga **TaroModpack** (KeoOptimized desde Modrinth, con sus mods y configs).
+  Cuando sale una versión nueva, el launcher ofrece actualizarla (ver [`taro/README.md`](taro/README.md)).
 - Si el jugador ya usaba Prism Launcher, TaroLauncher ofrece importar sus instancias y cuentas.
 
-## 1. Poner tus mods (KeoOptimized)
+## 1. Modpack y noticias
 
-Copiá los mods y configs en `taro/TaroModpack/minecraft/` y subí el número de `taro/TaroModpack/taro_modpack.json`.
-Instrucciones detalladas en [`taro/README.md`](taro/README.md).
+TaroModpack se descarga solo de Modrinth (KeoOptimized). Para cambiar el modpack, la versión de Minecraft
+o las noticias del menú principal, mirá [`taro/README.md`](taro/README.md).
 
 ## 2. Conseguir el instalador (GitHub Actions)
 

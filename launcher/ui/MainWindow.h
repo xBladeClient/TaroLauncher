@@ -59,6 +59,10 @@ class BaseProfilerFactory;
 class InstanceView;
 class KonamiCode;
 class InstanceTask;
+class QNetworkReply;
+class QStackedWidget;
+class TaroHomeWidget;
+class TaroModpackManager;
 
 namespace Ui {
 class MainWindow;
@@ -235,6 +239,13 @@ class MainWindow : public QMainWindow {
 
     void handleInstanceRename(const QString& before, const QString& after);
 
+    // TaroLauncher home screen
+    void setupTaroHome();
+    void setTaroHomeVisible(bool home);
+    void scheduleTaroHomeRefresh();
+    void refreshTaroHome();
+    void loadTaroNews();
+
    private:
     Ui::MainWindow* ui;
     // these are managed by Qt's memory management model!
@@ -257,4 +268,11 @@ class MainWindow : public QMainWindow {
 
     // managed by the application object
     Task* m_versionLoadTask = nullptr;
+
+    // TaroLauncher
+    QStackedWidget* m_taroStack = nullptr;
+    TaroHomeWidget* m_taroHome = nullptr;
+    TaroModpackManager* m_taroModpack = nullptr;
+    QTimer m_taroRefreshTimer;
+    bool m_taroNewsLoaded = false;
 };

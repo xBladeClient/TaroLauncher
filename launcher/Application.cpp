@@ -824,6 +824,8 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("InstRenamingMode", "AskEverytime");
         m_settings->registerSetting("EditInstanceOnDoubleClick", false);
         m_settings->registerSetting("SelectedInstance", QString());
+        // TaroLauncher: show the home screen instead of the classic instance list
+        m_settings->registerSetting("TaroHomeView", true);
 
         // Window state and geometry
         m_settings->registerSetting("MainWindowState", "");
@@ -961,19 +963,16 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         qInfo() << "<> Network done.";
     }
 
-    // TaroLauncher: install or update the bundled TaroModpack before icons and instances are loaded
+    // TaroLauncher: prepare the bundled TaroModpack (icon, cleanup) before icons and instances are loaded.
+    // The modpack itself is downloaded from Modrinth by the main window (ui/taro/TaroModpackManager).
     {
-        const QString modpackTemplate = TaroModpack::findTemplate({
+        m_taroModpackDir = TaroModpack::findTemplate({
             m_rootPath,
             FS::PathCombine(m_rootPath, "share", BuildConfig.LAUNCHER_NAME),
             applicationDirPath(),
             FS::PathCombine(applicationDirPath(), "..", "Resources"),
         });
-        TaroModpack::ensureInstalled(modpackTemplate, m_settings->get("InstanceDir").toString(), m_settings->get("IconsDir").toString());
-        // preselect the modpack the first time the launcher opens
-        if (m_settings->get("SelectedInstance").toString().isEmpty()) {
-            m_settings->set("SelectedInstance", QString(TaroModpack::INSTANCE_ID));
-        }
+        TaroModpack::prepareStartup(m_taroModpackDir, m_settings->get("InstanceDir").toString(), m_settings->get("IconsDir").toString());
     }
 
     // Instance icons

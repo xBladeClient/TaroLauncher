@@ -158,6 +158,7 @@ class Application : public QApplication {
      * Returns a null-string if it could not be found.
      */
     QString getJarPath(const QString& jarFile);
+    QString taroModpackDir() const { return m_taroModpackDir; }
 
     QString getMSAClientID();
     QString getFlameAPIKey();
@@ -260,6 +261,7 @@ class Application : public QApplication {
 
     QMap<QString, std::shared_ptr<BaseProfilerFactory>> m_profilers;
 
+    QString m_taroModpackDir;
     QString m_rootPath;
     QString m_dataPath;
     Status m_status = Application::StartingUp;

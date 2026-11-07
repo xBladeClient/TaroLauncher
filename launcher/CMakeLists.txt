@@ -808,6 +808,10 @@ SET(LAUNCHER_SOURCES
     logs/AnonymizeLog.h
 
     # GUI - windows
+    ui/taro/TaroHomeWidget.h
+    ui/taro/TaroHomeWidget.cpp
+    ui/taro/TaroModpackManager.h
+    ui/taro/TaroModpackManager.cpp
     ui/MainWindow.h
     ui/MainWindow.cpp
     ui/InstanceWindow.h
@@ -1195,6 +1199,7 @@ endif()
 qt_add_resources(LAUNCHER_RESOURCES
     resources/backgrounds/backgrounds.qrc
     resources/multimc/multimc.qrc
+    resources/taro/taro.qrc
     resources/pe_dark/pe_dark.qrc
     resources/pe_light/pe_light.qrc
     resources/pe_colored/pe_colored.qrc

@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/taro">
+        <file>banner.png</file>
+        <file>logo.png</file>
+        <file>fonts/Monocraft.ttf</file>
+        <file>fonts/Monocraft-Bold.ttf</file>
+    </qresource>
+</RCC>
