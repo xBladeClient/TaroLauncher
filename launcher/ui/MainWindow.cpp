@@ -44,6 +44,7 @@
 
 #include "MainWindow.h"
 
+#include <QDateTime>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -54,6 +55,7 @@
 #include <algorithm>
 
 #include "net/Mode.h"
+#include "TaroDiscordPresence.h"
 #include "ui/taro/TaroHomeWidget.h"
 #include "ui/taro/TaroModpackManager.h"
 #include "ui_MainWindow.h"
@@ -543,6 +545,11 @@ void MainWindow::setupTaroHome()
         scheduleTaroHomeRefresh();
     });
 
+    // Discord Rich Presence ("Jugando TaroLauncher")
+    m_launcherStart = QDateTime::currentSecsSinceEpoch();
+    m_discord = new TaroDiscordPresence(m_taroModpack->config().discordClientId, this);
+    m_discord->setEnabled(APPLICATION->settings()->get("TaroDiscordPresence").toBool());
+
     // Applied after restoreState()/restoreGeometry(), which run right after the constructor
     QTimer::singleShot(0, this, [this] {
         setTaroHomeVisible(APPLICATION->settings()->get("TaroHomeView").toBool());
@@ -559,13 +566,10 @@ void MainWindow::setTaroHomeVisible(bool home)
     }
     m_taroStack->setCurrentIndex(home ? 0 : 1);
     APPLICATION->settings()->set("TaroHomeView", home);
+    updateMainToolBar();
     if (home) {
-        ui->mainToolBar->hide();
-        ui->instanceToolBar->hide();
-        statusBar()->hide();
         refreshTaroHome();
     } else {
-        updateMainToolBar();
         ui->instanceToolBar->show();
         setStatusBarVisibility(APPLICATION->settings()->get("StatusBarVisible").toBool());
     }
@@ -645,6 +649,40 @@ void MainWindow::refreshTaroHome()
         profiles << profile;
     }
     m_taroHome->setProfiles(profiles);
+
+    // Discord: what is being played right now
+    if (m_discord && m_discord->isEnabled()) {
+        const auto& config = m_taroModpack->config();
+        TaroDiscordPresence::Activity activity;
+        activity.largeImage = config.discordImage;
+        activity.largeText = BuildConfig.LAUNCHER_DISPLAYNAME;
+        activity.buttonLabel = tr("Descargar %1").arg(BuildConfig.LAUNCHER_DISPLAYNAME);
+        activity.buttonUrl = config.downloadUrl;
+        const TaroHomeProfile* playing = nullptr;
+        for (const auto& profile : profiles) {
+            if (profile.running) {
+                playing = &profile;
+                break;
+            }
+        }
+        // forget instances that stopped, remember when new ones started
+        for (auto it = m_playStart.begin(); it != m_playStart.end();) {
+            auto* inst = APPLICATION->instances()->getInstanceById(it.key());
+            it = (inst && inst->isRunning()) ? std::next(it) : m_playStart.erase(it);
+        }
+        if (playing) {
+            if (!m_playStart.contains(playing->id)) {
+                m_playStart.insert(playing->id, QDateTime::currentSecsSinceEpoch());
+            }
+            activity.details = tr("Jugando %1").arg(playing->name);
+            activity.state = QString("%1 %2").arg(playing->loader, playing->gameVersion).trimmed();
+            activity.startSecs = m_playStart.value(playing->id);
+        } else {
+            activity.details = tr("En el menú principal");
+            activity.startSecs = m_launcherStart;
+        }
+        m_discord->setActivity(activity);
+    }
 }
 
 void MainWindow::loadTaroNews()
@@ -684,7 +722,8 @@ void MainWindow::loadTaroNews()
 #ifndef Q_OS_MAC
 void MainWindow::keyReleaseEvent(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Alt && !APPLICATION->settings()->get("MenuBarInsteadOfToolBar").toBool())
+    if (event->key() == Qt::Key_Alt && !APPLICATION->settings()->get("MenuBarInsteadOfToolBar").toBool() &&
+        !(m_taroStack && m_taroStack->currentIndex() == 0))
         ui->menuBar->setVisible(!ui->menuBar->isVisible());
     else
         QMainWindow::keyReleaseEvent(event);
@@ -832,8 +871,15 @@ void MainWindow::showInstanceContextMenu(const QPoint& pos)
 
 void MainWindow::updateMainToolBar()
 {
-    ui->menuBar->setVisible(APPLICATION->settings()->get("MenuBarInsteadOfToolBar").toBool());
-    ui->mainToolBar->setVisible(ui->menuBar->isNativeMenuBar() || !APPLICATION->settings()->get("MenuBarInsteadOfToolBar").toBool());
+    // TaroLauncher: the home screen has its own bar, the classic toolbars stay hidden there
+    const bool home = m_taroStack && m_taroStack->currentIndex() == 0;
+    ui->menuBar->setVisible(!home && APPLICATION->settings()->get("MenuBarInsteadOfToolBar").toBool());
+    ui->mainToolBar->setVisible(!home &&
+                                (ui->menuBar->isNativeMenuBar() || !APPLICATION->settings()->get("MenuBarInsteadOfToolBar").toBool()));
+    if (home) {
+        ui->instanceToolBar->hide();
+        statusBar()->hide();
+    }
 }
 
 void MainWindow::updateLaunchButton()

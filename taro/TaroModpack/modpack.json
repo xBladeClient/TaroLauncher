@@ -3,5 +3,8 @@
     "modrinth_project": "oePruTVg",
     "game_version": "26.3",
     "loader": "fabric",
-    "news_url": "https://raw.githubusercontent.com/xBladeClient/TaroLauncher/main/taro/news.json"
+    "news_url": "https://raw.githubusercontent.com/xBladeClient/TaroLauncher/main/taro/news.json",
+    "discord_client_id": "",
+    "discord_image": "https://raw.githubusercontent.com/xBladeClient/TaroLauncher/main/program_info/com.tarolauncher.TaroLauncher_256.png",
+    "download_url": "https://github.com/xBladeClient/TaroLauncher/releases/latest"
 }

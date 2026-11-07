@@ -41,6 +41,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QMap>
 #include <QProcess>
 #include <QTimer>
 
@@ -63,6 +64,7 @@ class QNetworkReply;
 class QStackedWidget;
 class TaroHomeWidget;
 class TaroModpackManager;
+class TaroDiscordPresence;
 
 namespace Ui {
 class MainWindow;
@@ -275,4 +277,7 @@ class MainWindow : public QMainWindow {
     TaroModpackManager* m_taroModpack = nullptr;
     QTimer m_taroRefreshTimer;
     bool m_taroNewsLoaded = false;
+    TaroDiscordPresence* m_discord = nullptr;
+    QMap<QString, qint64> m_playStart;  // instance id -> unix time when it started running
+    qint64 m_launcherStart = 0;
 };

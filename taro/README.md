@@ -43,3 +43,20 @@ así que **podés cambiarlas editando ese archivo en la web de GitHub**, sin sac
 ```
 
 `url` es opcional: si la ponés, la tarjeta se abre en el navegador al hacer click.
+
+## Discord ("Jugando TaroLauncher")
+
+TaroLauncher muestra en Discord **Jugando ahora: TaroLauncher** con su ícono (también al lado de tu nombre
+cuando estás en una llamada), qué perfil estás jugando y hace cuánto tiempo, y un botón **Descargar TaroLauncher**.
+
+Para activarlo hace falta una aplicación de Discord (gratis, se hace una sola vez):
+
+1. Entrá a <https://discord.com/developers/applications> y tocá **New Application**. Nombre: **TaroLauncher**
+   (es el texto que aparece en "Jugando ahora").
+2. En **General Information** subí el ícono en **App Icon** (es el ícono que se ve en las llamadas) y guardá.
+3. Copiá el **Application ID**.
+4. En GitHub, editá [`TaroModpack/modpack.json`](TaroModpack/modpack.json) y pegalo en `"discord_client_id"`.
+   Al guardar se genera un instalador nuevo con Discord activado.
+
+Campos relacionados en `modpack.json`: `discord_image` (imagen grande de la actividad) y `download_url`
+(link del botón).

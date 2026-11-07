@@ -450,7 +450,7 @@ void TaroHomeWidget::setAccountMenu(QMenu* menu)
 void TaroHomeWidget::setPlayer(const QString& name, const QPixmap& face)
 {
     const QString shown = name.isEmpty() ? tr("Agregar cuenta") : name;
-    m_accountButton->setText(QString("%1  ▾").arg(shown.toUpper()));
+    m_accountButton->setText(QString("  %1  ▾").arg(shown.toUpper()));
     if (face.isNull()) {
         m_accountButton->setIcon(glyphIcon(GLYPH_ACCOUNT, 3));
     } else {

@@ -826,6 +826,14 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("SelectedInstance", QString());
         // TaroLauncher: show the home screen instead of the classic instance list
         m_settings->registerSetting("TaroHomeView", true);
+        m_settings->registerSetting("TaroDiscordPresence", true);
+        // switch to the TaroLauncher theme once (also for installs that already had another theme selected)
+        m_settings->registerSetting("TaroThemeApplied", false);
+        if (!m_settings->get("TaroThemeApplied").toBool()) {
+            m_settings->set("ApplicationTheme", "taro");
+            m_settings->set("IconTheme", "flat_white");
+            m_settings->set("TaroThemeApplied", true);
+        }
 
         // Window state and geometry
         m_settings->registerSetting("MainWindowState", "");
@@ -1304,8 +1312,8 @@ bool Application::createSetupWizard()
 #if defined(Q_OS_LINUX)
             const QString style = "system";
 #else
-            const QString style = darkMode ? QStringLiteral("dark") : QStringLiteral("bright");
-
+            const QString style = QStringLiteral("taro");
+            Q_UNUSED(darkMode)
 #endif
 
             settings()->set("ApplicationTheme", style);

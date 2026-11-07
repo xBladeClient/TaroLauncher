@@ -775,6 +775,8 @@ SET(LAUNCHER_SOURCES
     DataMigrationTask.cpp
     TaroModpack.h
     TaroModpack.cpp
+    TaroDiscordPresence.h
+    TaroDiscordPresence.cpp
     ApplicationMessage.h
     ApplicationMessage.cpp
     SysInfo.h
@@ -858,6 +860,8 @@ SET(LAUNCHER_SOURCES
     ui/themes/CustomTheme.h
     ui/themes/DarkTheme.cpp
     ui/themes/DarkTheme.h
+    ui/themes/TaroTheme.cpp
+    ui/themes/TaroTheme.h
     ui/themes/ITheme.cpp
     ui/themes/ITheme.h
     ui/themes/HintOverrideProxyStyle.cpp

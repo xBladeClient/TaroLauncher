@@ -30,6 +30,9 @@ struct Config {
     QString gameVersion;      // optional filter, e.g. "26.3"
     QString loader;           // optional filter, e.g. "fabric"
     QString newsUrl;          // optional JSON list of news shown on the home screen
+    QString discordClientId;  // Discord application id for Rich Presence ("Jugando TaroLauncher")
+    QString discordImage;     // image shown in Discord (asset key or https URL)
+    QString downloadUrl;      // link of the "Descargar TaroLauncher" button in Discord
     bool isValid() const { return !modrinthProject.isEmpty(); }
 };
 

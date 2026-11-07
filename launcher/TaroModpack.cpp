@@ -84,6 +84,9 @@ Config readConfig(const QString& templateDir)
     config.gameVersion = obj.value("game_version").toString().trimmed();
     config.loader = obj.value("loader").toString().trimmed().toLower();
     config.newsUrl = obj.value("news_url").toString().trimmed();
+    config.discordClientId = obj.value("discord_client_id").toString().trimmed();
+    config.discordImage = obj.value("discord_image").toString().trimmed();
+    config.downloadUrl = obj.value("download_url").toString().trimmed();
     return config;
 }
 
