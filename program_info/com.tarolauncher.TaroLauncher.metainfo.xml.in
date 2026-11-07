@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>@Launcher_AppID@</id>
+  <name>TaroLauncher</name>
+  <summary>Minecraft launcher with the TaroModpack preinstalled</summary>
+  <developer id="com.tarolauncher">
+    <name>TaroLauncher</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <description>
+    <p>TaroLauncher is a custom Minecraft launcher based on Prism Launcher. It ships with TaroModpack ready to play.</p>
+  </description>
+  <releases>
+    <release version="@Launcher_VERSION_NAME@" date="@Launcher_BUILD_TIMESTAMP@"></release>
+  </releases>
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-fantasy">moderate</content_attribute>
+    <content_attribute id="social-chat">intense</content_attribute>
+  </content_rating>
+  <launchable type="desktop-id">@Launcher_AppID@.desktop</launchable>
+</component>

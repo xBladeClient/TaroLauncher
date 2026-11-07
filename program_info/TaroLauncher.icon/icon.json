@@ -1,0 +1,21 @@
+{
+  "fill": {
+    "solid": "extended-gray:1.00000,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "taro.png",
+          "name": "taro"
+        }
+      ]
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ],
+    "squares": "shared"
+  }
+}
