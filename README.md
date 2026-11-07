@@ -1,6 +1,6 @@
 # TaroLauncher
 
-Launcher de Minecraft basado en [Prism Launcher](https://github.com/PrismLauncher/PrismLauncher) (GPL-3.0),
+Launcher de Minecraft
 con **TaroModpack** (Minecraft 26.3 + Fabric) preinstalado.
 
 - Al instalarlo con `TaroLauncher-Setup.exe` se crea un acceso directo en el escritorio y en el menú Inicio.
