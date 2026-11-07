@@ -173,7 +173,7 @@ jobs:
           target_commitish: ${{ github.sha }}
           make_latest: true
           body: |
-            Descargá **TaroLauncher-Setup.exe**, hacé doble click y seguí el instalador.
+            Descargá **TaroLauncherInstaller.exe**, hacé doble click y seguí el instalador.
             Incluye TaroModpack (Minecraft 26.3 + Fabric).
-          files: TaroLauncher-Setup.exe
+          files: TaroLauncherInstaller.exe
           fail_on_unmatched_files: true

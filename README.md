@@ -3,7 +3,7 @@
 Launcher de Minecraft
 con **TaroModpack** (Minecraft 26.3 + Fabric) preinstalado.
 
-- Al instalarlo con `TaroLauncher-Setup.exe` se crea un acceso directo en el escritorio y en el menú Inicio.
+- Al instalarlo con `TaroLauncherInstaller.exe` se crea un acceso directo en el escritorio y en el menú Inicio.
 - Todos los datos (instancias, cuentas, configuración) se guardan en `%APPDATA%\TaroLauncher`.
 - La primera vez que se abre, aparece la instancia **TaroModpack** lista para jugar. Si actualizás el
   modpack, los jugadores reciben los cambios solos al abrir el launcher (ver [`taro/README.md`](taro/README.md)).
@@ -23,12 +23,12 @@ No hace falta instalar Visual Studio ni Qt: GitHub lo compila gratis.
 3. Hacé click en **Publish repository** (podés dejarlo privado).
 4. En GitHub, entrá a la pestaña **Actions**: el build arranca solo (tarda unos 30-60 minutos la primera vez).
 5. Cuando termine, abrí el build y descargá el artefacto **TaroLauncher-Windows-MSVC-Setup-...**:
-   adentro está `TaroLauncher-Setup.exe`.
+   adentro está `TaroLauncherInstaller.exe`.
 
 Cada vez que hagas cambios (por ejemplo, mods nuevos), hacé **Commit** + **Push** en GitHub Desktop y se genera un instalador nuevo.
 
 **Publicar una versión:** creá un tag que empiece con `v` (por ejemplo `v1.0.0`) y GitHub crea una Release
-con `TaroLauncher-Setup.exe` adjunto para compartir.
+con `TaroLauncherInstaller.exe` adjunto para compartir.
 
 ## 3. Login con cuentas de Microsoft (premium)
 
