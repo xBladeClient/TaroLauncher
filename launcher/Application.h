@@ -262,6 +262,7 @@ class Application : public QApplication {
     QMap<QString, std::shared_ptr<BaseProfilerFactory>> m_profilers;
 
     QString m_taroModpackDir;
+    QString m_taroMsaClientId;
     QString m_rootPath;
     QString m_dataPath;
     Status m_status = Application::StartingUp;

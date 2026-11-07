@@ -33,6 +33,7 @@ struct Config {
     QString discordClientId;  // Discord application id for Rich Presence ("Jugando TaroLauncher")
     QString discordImage;     // image shown in Discord (asset key or https URL)
     QString downloadUrl;      // link of the "Descargar TaroLauncher" button in Discord
+    QString microsoftClientId;  // Azure application id for Microsoft (premium) accounts
     bool isValid() const { return !modrinthProject.isEmpty(); }
 };
 

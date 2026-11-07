@@ -6,5 +6,6 @@
     "news_url": "https://raw.githubusercontent.com/xBladeClient/TaroLauncher/main/taro/news.json",
     "discord_client_id": "1568494851064860702",
     "discord_image": "https://raw.githubusercontent.com/xBladeClient/TaroLauncher/main/program_info/com.tarolauncher.TaroLauncher_256.png",
-    "download_url": "https://github.com/xBladeClient/TaroLauncher/releases/latest"
+    "download_url": "https://github.com/xBladeClient/TaroLauncher/releases/latest",
+    "microsoft_client_id": ""
 }

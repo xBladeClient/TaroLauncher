@@ -60,3 +60,18 @@ Para activarlo hace falta una aplicación de Discord (gratis, se hace una sola v
 
 Campos relacionados en `modpack.json`: `discord_image` (imagen grande de la actividad) y `download_url`
 (link del botón).
+
+## Cuentas premium (Microsoft)
+
+Las cuentas **sin conexión** funcionan siempre. Para las **premium** Microsoft exige que cada launcher tenga
+su propia aplicación registrada (la de Prism no se puede reutilizar):
+
+1. Entrá a <https://portal.azure.com> → **Microsoft Entra ID** → **App registrations** → **New registration**.
+   - Name: **TaroLauncher**
+   - Supported account types: **Personal Microsoft accounts only**
+   - Redirect URI: plataforma **Public client/native (mobile & desktop)** con `http://localhost`
+2. En la app creada → **Authentication** → **Allow public client flows: Yes** → Save.
+3. Copiá el **Application (client) ID** y pegalo en `"microsoft_client_id"` de
+   [`TaroModpack/modpack.json`](TaroModpack/modpack.json).
+4. Pedile a Mojang que apruebe la app en <https://aka.ms/mce-reviewappid> (puede tardar días o semanas).
+   Hasta que la aprueben, el login premium da error "Invalid app registration".

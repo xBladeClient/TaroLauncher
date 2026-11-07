@@ -981,6 +981,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
             FS::PathCombine(applicationDirPath(), "..", "Resources"),
         });
         TaroModpack::prepareStartup(m_taroModpackDir, m_settings->get("InstanceDir").toString(), m_settings->get("IconsDir").toString());
+        m_taroMsaClientId = TaroModpack::readConfig(m_taroModpackDir).microsoftClientId;
     }
 
     // Instance icons
@@ -1967,7 +1968,11 @@ QString Application::getMSAClientID()
         return clientIDOverride;
     }
 
-    return BuildConfig.MSA_CLIENT_ID;
+    if (!BuildConfig.MSA_CLIENT_ID.isEmpty()) {
+        return BuildConfig.MSA_CLIENT_ID;
+    }
+    // TaroLauncher: Microsoft application id from TaroModpack/modpack.json ("microsoft_client_id")
+    return m_taroMsaClientId;
 }
 
 QString Application::getFlameAPIKey()

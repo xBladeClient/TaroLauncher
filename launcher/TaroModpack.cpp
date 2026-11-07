@@ -87,6 +87,7 @@ Config readConfig(const QString& templateDir)
     config.discordClientId = obj.value("discord_client_id").toString().trimmed();
     config.discordImage = obj.value("discord_image").toString().trimmed();
     config.downloadUrl = obj.value("download_url").toString().trimmed();
+    config.microsoftClientId = obj.value("microsoft_client_id").toString().trimmed();
     return config;
 }
 
